@@ -19,6 +19,9 @@ theories/Basics/CategoryKleisliFacts.v
 theories/Basics/Function.v
 theories/Basics/FunctionFacts.v
 
+theories/Codata/Container.v
+theories/Codata/GreatestFixpoint.v
+
 theories/Core/ITreeDefinition.v
 theories/Core/KTree.v
 theories/Core/KTreeFacts.v
