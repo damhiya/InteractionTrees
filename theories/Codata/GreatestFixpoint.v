@@ -1,11 +1,14 @@
 
 Set Primitive Projections.
 
-From ITree Require Import
-     Codata.Container.
-
 From Coq Require Import
      Program.Basics.
+
+From Paco Require Import
+     paco.
+
+From ITree Require Import
+     Codata.Container.
 
 Import EqNotations.
 
@@ -37,13 +40,15 @@ Definition next_eq {I O} (C : Container I O) (X Y : I -> Type)
     (projT1 y)
     command.
 
-Variant bisimF {I O} (C : Container I O) (X Y : I -> Type) (R : forall i, X i -> Y i -> Type)
-        (o : O) (x : [ C ] X o) (y : [ C ] Y o) :=
+Variant bisimF_ {I O} (C : Container I O) (X Y : I -> Type) (R : forall i, X i -> Y i -> Type)
+        (o : O) (x : [ C ] X o) (y : [ C ] Y o) : Prop :=
 | BisimStep (command_eq : projT1 x = projT1 y)
             (response_R : forall r, R (next C o (projT1 y) (rew command_eq in r))
                                   (rew (next_eq C X Y o x y command_eq r) in (projT2 x r))
                                   (projT2 y (rew command_eq in r)))
 .
 
-CoInductive bisim {I} (C : Container I I) (i : I) (x y : M C i) : Type := fold_bisim
-  { unfold_bisim : bisimF C (M C) (M C) (bisim C) i (unfoldM x) (unfoldM y) }.
+Definition bisimF {I} (C : Container I I) (R : forall i, M C i -> M C i -> Prop)
+           (i : I) (x : M C i) (y : M C i) := bisimF_ C (M C) (M C) R i (unfoldM x) (unfoldM y).
+
+Definition bisim {I} (C : Container I I) := paco3 (bisimF C).
