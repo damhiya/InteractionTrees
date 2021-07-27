@@ -5,12 +5,12 @@ Record Container (I O : Type) : Type := container
   ; next : forall {o : O} (c : Command o), Response c -> I
   }.
 
-Arguments Command {I} {O}.
-Arguments Response {I} {O}.
-Arguments next {I} {O}.
+Arguments Command {I} {O} C : rename.
+Arguments Response {I} {O} C {o} : rename.
+Arguments next {I} {O} C {o} : rename.
 
 Definition container_ext {I O} (C : Container I O) : (I -> Type) -> (O -> Type) :=
-  fun X o => {c : C.(Command) o & forall (r : C.(Response) o c), X (C.(next) o c r)}.
+  fun X o => {c : Command C o & forall (r : Response C c), X (next C c r)}.
 
 Notation "[ C ]" := (container_ext C) (at level 99, no associativity).
 

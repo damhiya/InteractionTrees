@@ -28,14 +28,13 @@ Definition J {A : Type} {x : A} (P : forall y : A, x = y -> Type) (d : P x eq_re
   | eq_refl => d
   end.
 
-Definition next_eq {I O} (C : Container I O) (X Y : I -> Type)
-           (o : O)
-           (x : [ C ] X o) (y : [ C ] Y o)
+Definition next_eq {I O} {C : Container I O} {X Y : I -> Type}
+           {o : O} {x : [ C ] X o} {y : [ C ] Y o}
            (command : projT1 x = projT1 y)
-           (r : Response C o (projT1 x)) :
-  next C o (projT1 x) r = next C o (projT1 y) (rew command in r) :=
+           (r : Response C (projT1 x)) :
+  next C (projT1 x) r = next C (projT1 y) (rew command in r) :=
   J
-    (fun c (command : projT1 x = c) => next C o (projT1 x) r = next C o c (rew command in r))
+    (fun c (command : projT1 x = c) => next C (projT1 x) r = next C c (rew command in r))
     eq_refl
     (projT1 y)
     command.
@@ -43,12 +42,12 @@ Definition next_eq {I O} (C : Container I O) (X Y : I -> Type)
 Variant bisimF_ {I O} (C : Container I O) (X Y : I -> Type) (R : forall i, X i -> Y i -> Type)
         (o : O) (x : [ C ] X o) (y : [ C ] Y o) : Prop :=
 | BisimStep (command_eq : projT1 x = projT1 y)
-            (response_R : forall r, R (next C o (projT1 y) (rew command_eq in r))
-                                  (rew (next_eq C X Y o x y command_eq r) in (projT2 x r))
-                                  (projT2 y (rew command_eq in r)))
+            (response_R : forall r, R (next C (projT1 y) (rew command_eq in r))
+                                 (rew (next_eq command_eq r) in (projT2 x r))
+                                 (projT2 y (rew command_eq in r)))
 .
 
-Definition bisimF {I} (C : Container I I) (R : forall i, M C i -> M C i -> Prop)
-           (i : I) (x : M C i) (y : M C i) := bisimF_ C (M C) (M C) R i (unfoldM x) (unfoldM y).
+Definition bisimF {I} (C : Container I I) (R : forall i, M C i -> M C i -> Prop) (i : I) (x : M C i) (y : M C i) :=
+  bisimF_ C (M C) (M C) R i (unfoldM x) (unfoldM y).
 
 Definition bisim {I} (C : Container I I) := paco3 (bisimF C).
