@@ -21,6 +21,8 @@ theories/Basics/FunctionFacts.v
 
 theories/Codata/Container.v
 theories/Codata/GreatestFixpoint.v
+theories/Codata/IndexedContainer.v
+theories/Codata/IndexedGreatestFixpoint.v
 
 theories/Core/ITreeDefinition.v
 theories/Core/KTree.v
