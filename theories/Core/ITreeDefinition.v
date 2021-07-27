@@ -6,7 +6,10 @@ Require Import ExtLib.Structures.Applicative.
 Require Import ExtLib.Structures.Monad.
 Require Import Program.Tactics.
 
-From ITree Require Import Basics.
+From ITree Require Import
+     Basics
+     Codata.Container
+     Codata.GreatestFixpoint.
 
 Set Implicit Arguments.
 Set Contextual Implicit.
@@ -21,6 +24,48 @@ Set Primitive Projections.
     branching node [Vis] with a _visible event_ [E X] that branches
     on the values of [X]. *)
 
+Section itree_container.
+
+  Context {E : Type -> Type} {R : Type}.
+
+  Variant itree_Shape :=
+  | RetShape (r : R)
+  | TauShape
+  | VisShape {X : Type} (e : E X)
+  .
+
+  Definition itree_Position (s : itree_Shape) : Type :=
+    match s with
+    | RetShape r => void
+    | TauShape => unit
+    | @VisShape X _ => X
+    end.
+
+  Definition itree_container := container itree_Shape itree_Position.
+
+  Definition itreeF X := [ itree_container ] X.
+  Definition itree := M itree_container.
+  Definition itree' := itreeF itree.
+
+End itree_container.
+
+Arguments itreeF _ _ : clear implicits.
+Arguments itree _ _ : clear implicits.
+Arguments itree' _ _ : clear implicits.
+
+Definition observe {E R} (t : itree E R) : itree' E R := unfoldM t.
+Definition go {E R} (t : itree' E R) : itree E R := foldM t.
+
+Definition Ret {E R} (x : R) : itree E R :=
+  go (existT _ (RetShape x) (Empty_set_rect _)).
+
+Definition Tau {E R} (t : itree E R) : itree E R :=
+  go (existT _ TauShape (fun _ => t)).
+
+Definition Vis {E R X} (e : E X) (k : X -> itree E R) : itree E R :=
+  go (existT _ (VisShape e) k).
+
+(*
 Section itree.
 
   Context {E : Type -> Type} {R : Type}.
@@ -99,6 +144,7 @@ Definition observe {E R} (t : itree E R) : itree' E R := @_observe E R t.
 Notation Ret x := (go (RetF x)).
 Notation Tau t := (go (TauF t)).
 Notation Vis e k := (go (VisF e k)).
+*)
 
 (** ** Main operations on [itree] *)
 
