@@ -205,13 +205,17 @@ Section bind.
    *)
   Variable k : T -> itree E U.
 
+
   Definition _bind
              (bind : itree E T -> itree E U)
              (oc : itreeF E T (itree E T)) : itree E U :=
     match oc with
-    | RetF r => k r
-    | TauF t => Tau (bind t)
-    | VisF e h => Vis e (fun x => bind (h x))
+    | existT _ s p =>
+      match s as s0 return (Position itree_container s0 -> itree E T) -> itree E U with
+      | RetShape r => fun p => k r
+      | TauShape => fun p => Tau (bind (p tt))
+      | VisShape e => fun p => Vis e (fun x => bind (p x))
+      end p
     end.
 
   CoFixpoint bind' (t : itree E T) : itree E U :=
@@ -359,8 +363,11 @@ Fixpoint burn (n : nat) {E R} (t : itree E R) :=
   | O => t
   | S n =>
     match observe t with
-    | RetF r => Ret r
-    | VisF e k => Vis e k
-    | TauF t' => burn n t'
+    | existT _ s p =>
+      match s as s0 return (Position itree_container s0 -> itree E R) -> itree E R with
+      | RetShape r => fun p => Ret r
+      | TauShape => fun p => burn n (p tt)
+      | VisShape e => fun p => Vis e p
+      end p
     end
   end.
