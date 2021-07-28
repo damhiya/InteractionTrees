@@ -26,7 +26,7 @@ Set Primitive Projections.
 
 Section itree_container.
 
-  Context {E : Type -> Type} {R : Type}.
+  Context (E : Type -> Type) (R : Type).
 
   Variant itree_Shape :=
   | RetShape (r : R)
@@ -53,21 +53,19 @@ Bind Scope itree_scope with itree.
 Delimit Scope itree_scope with itree.
 Local Open Scope itree_scope.
 
-Arguments itreeF _ _ : clear implicits.
-Arguments itree _ _ : clear implicits.
-Arguments itree' _ _ : clear implicits.
-
 Definition observe {E R} (t : itree E R) : itree' E R := unfoldM t.
 Definition go {E R} (t : itree' E R) : itree E R := foldM t.
 
+Definition itreeExt {E R} {X} (s : itree_Shape E R) (g : itree_Position s -> X) : itreeF E R X := existT _ s g.
+
 Definition RetF {E R} (x : R) : itree' E R :=
-  existT _ (RetShape x) (Empty_set_rect _).
+  itreeExt (RetShape x) (Empty_set_rect _).
 
 Definition TauF {E R} (t : itree E R) : itree' E R :=
-  existT _ TauShape (fun _ => t).
+  itreeExt TauShape (fun _ => t).
 
 Definition VisF {E R X} (e : E X) (k : X -> itree E R) : itree' E R :=
-  existT _ (VisShape e) k.
+  itreeExt (VisShape e) k.
 
 Notation Ret x := (go (RetF x)).
 Notation Tau t := (go (TauF t)).
@@ -219,7 +217,7 @@ Section bind.
              (oc : itreeF E T (itree E T)) : itree E U :=
     match oc with
     | existT _ s p =>
-      match s as s0 return (Position itree_container s0 -> itree E T) -> itree E U with
+      match s as s0 return (Position (itree_container E T) s0 -> itree E T) -> itree E U with
       | RetShape r => fun p => k r
       | TauShape => fun p => Tau (bind (p tt))
       | VisShape e => fun p => Vis e (fun x => bind (p x))
@@ -372,7 +370,7 @@ Fixpoint burn (n : nat) {E R} (t : itree E R) :=
   | S n =>
     match observe t with
     | existT _ s p =>
-      match s as s0 return (Position itree_container s0 -> itree E R) -> itree E R with
+      match s as s0 return (Position (itree_container E R) s0 -> itree E R) -> itree E R with
       | RetShape r => fun p => Ret r
       | TauShape => fun p => burn n (p tt)
       | VisShape e => fun p => Vis e p
