@@ -26,7 +26,7 @@ Set Primitive Projections.
 
 Section itree_container.
 
-  Context {E : Type -> Type} {R : Type}.
+  Context (E : Type -> Type) (R : Type).
 
   Variant itree_Shape :=
   | RetShape (r : R)
@@ -49,21 +49,27 @@ Section itree_container.
 
 End itree_container.
 
-Arguments itreeF _ _ : clear implicits.
-Arguments itree _ _ : clear implicits.
-Arguments itree' _ _ : clear implicits.
+Bind Scope itree_scope with itree.
+Delimit Scope itree_scope with itree.
+Local Open Scope itree_scope.
 
 Definition observe {E R} (t : itree E R) : itree' E R := unfoldM t.
 Definition go {E R} (t : itree' E R) : itree E R := foldM t.
 
-Definition Ret {E R} (x : R) : itree E R :=
-  go (existT _ (RetShape x) (Empty_set_rect _)).
+Definition itreeExt {E R} {X} (s : itree_Shape E R) (g : itree_Position s -> X) : itreeF E R X := existT _ s g.
 
-Definition Tau {E R} (t : itree E R) : itree E R :=
-  go (existT _ TauShape (fun _ => t)).
+Definition RetF {E R} (x : R) : itree' E R :=
+  itreeExt (RetShape x) (Empty_set_rect _).
 
-Definition Vis {E R X} (e : E X) (k : X -> itree E R) : itree E R :=
-  go (existT _ (VisShape e) k).
+Definition TauF {E R} (t : itree E R) : itree' E R :=
+  itreeExt TauShape (fun _ => t).
+
+Definition VisF {E R X} (e : E X) (k : X -> itree E R) : itree' E R :=
+  itreeExt (VisShape e) k.
+
+Notation Ret x := (go (RetF x)).
+Notation Tau t := (go (TauF t)).
+Notation Vis e k := (go (VisF e k)).
 
 (*
 Section itree.
@@ -211,7 +217,7 @@ Section bind.
              (oc : itreeF E T (itree E T)) : itree E U :=
     match oc with
     | existT _ s p =>
-      match s as s0 return (Position itree_container s0 -> itree E T) -> itree E U with
+      match s as s0 return (Position (itree_container E T) s0 -> itree E T) -> itree E U with
       | RetShape r => fun p => k r
       | TauShape => fun p => Tau (bind (p tt))
       | VisShape e => fun p => Vis e (fun x => bind (p x))
@@ -364,7 +370,7 @@ Fixpoint burn (n : nat) {E R} (t : itree E R) :=
   | S n =>
     match observe t with
     | existT _ s p =>
-      match s as s0 return (Position itree_container s0 -> itree E R) -> itree E R with
+      match s as s0 return (Position (itree_container E R) s0 -> itree E R) -> itree E R with
       | RetShape r => fun p => Ret r
       | TauShape => fun p => burn n (p tt)
       | VisShape e => fun p => Vis e p
