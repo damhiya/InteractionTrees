@@ -25,10 +25,15 @@ CoFixpoint anamorphism {C : Container} {X} :
 
 Variant bisimF_ (C : Container) (X : Type) (R : X -> X -> Type) : [ C ] X -> [ C ] X -> Prop :=
 | BisimStep (shape : Shape C)
-            (extension_l extension_r : Position C shape -> X)
-            (REL : forall p, R (extension_l p) (extension_r p))
-  : bisimF_ C X R (Ext shape extension_l) (Ext shape extension_r)
+            (get_l get_r : Position C shape -> X)
+            (REL : forall p, R (get_l p) (get_r p))
+  : bisimF_ C X R (Ext shape get_l) (Ext shape get_r)
 .
+
+Definition bisimF (C : Container) (R : M C -> M C -> Prop) (x y : M C) :=
+  bisimF_ C (M C) R (unfoldM x) (unfoldM y).
+
+Definition bisim (C : Container) := paco2 (bisimF C).
 
 Lemma bisimF_intro {C : Container} {X : Type} {R : X -> X -> Type} :
   forall shape : Shape C,
@@ -51,9 +56,6 @@ Proof.
   split; reflexivity.
 Qed.
 
-Definition bisimF (C : Container) (R : M C -> M C -> Prop) (x y : M C) :=
-  bisimF_ C (M C) R (unfoldM x) (unfoldM y).
-
 Lemma monotone2_bisimF (C : Container) :
   monotone2 (bisimF C).
 Proof.
@@ -67,5 +69,3 @@ Proof.
   apply LE.
   exact (REL p).
 Qed.
-
-Definition bisim (C : Container) := paco2 (bisimF C).
