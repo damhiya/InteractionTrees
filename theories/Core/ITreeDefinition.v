@@ -49,6 +49,10 @@ Section itree_container.
 
 End itree_container.
 
+Bind Scope itree_scope with itree.
+Delimit Scope itree_scope with itree.
+Local Open Scope itree_scope.
+
 Arguments itreeF _ _ : clear implicits.
 Arguments itree _ _ : clear implicits.
 Arguments itree' _ _ : clear implicits.
@@ -56,14 +60,18 @@ Arguments itree' _ _ : clear implicits.
 Definition observe {E R} (t : itree E R) : itree' E R := unfoldM t.
 Definition go {E R} (t : itree' E R) : itree E R := foldM t.
 
-Definition Ret {E R} (x : R) : itree E R :=
-  go (existT _ (RetShape x) (Empty_set_rect _)).
+Definition RetF {E R} (x : R) : itree' E R :=
+  existT _ (RetShape x) (Empty_set_rect _).
 
-Definition Tau {E R} (t : itree E R) : itree E R :=
-  go (existT _ TauShape (fun _ => t)).
+Definition TauF {E R} (t : itree E R) : itree' E R :=
+  existT _ TauShape (fun _ => t).
 
-Definition Vis {E R X} (e : E X) (k : X -> itree E R) : itree E R :=
-  go (existT _ (VisShape e) k).
+Definition VisF {E R X} (e : E X) (k : X -> itree E R) : itree' E R :=
+  existT _ (VisShape e) k.
+
+Notation Ret x := (go (RetF x)).
+Notation Tau t := (go (TauF t)).
+Notation Vis e k := (go (VisF e k)).
 
 (*
 Section itree.
