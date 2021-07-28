@@ -13,7 +13,7 @@ Arguments next {I} {O} C {o} : rename.
 Definition container_ext {I O} (C : Container I O) : (I -> Type) -> (O -> Type) :=
   fun X o => {c : Command C o & forall (r : Response C c), X (next C c r)}.
 
-Notation "[ C ]" := (container_ext C) (at level 99, no associativity).
+Notation "[ C ]" := (container_ext C) (at level 0, no associativity) : type_scope.
 
 Definition container_map {I} (C : Container I I) {X Y : I -> Type} :
   (forall i, X i -> Y i) -> (forall i, [ C ] X i -> [ C ] Y i) :=

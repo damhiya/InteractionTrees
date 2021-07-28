@@ -11,7 +11,7 @@ Record Container : Type := container
 Definition container_ext (C : Container) : Type -> Type :=
   fun X => {s : Shape C & Position C s -> X}.
 
-Notation "[ C ]" := (container_ext C) (at level 99, no associativity).
+Notation "[ C ]" := (container_ext C) (at level 0, no associativity) : type_scope.
 
 Definition container_map (C : Container) {X Y : Type} :
   (X -> Y) -> ([ C ] X -> [ C ] Y) :=
