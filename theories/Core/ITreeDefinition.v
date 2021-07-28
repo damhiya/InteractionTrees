@@ -56,6 +56,7 @@ Local Open Scope itree_scope.
 Definition observe {E R} (t : itree E R) : itree' E R := unfoldM t.
 Definition go {E R} (t : itree' E R) : itree E R := foldM t.
 
+(*
 Definition itreeExt {E R} {X} (s : itree_Shape E R) (g : itree_Position s -> X) : itreeF E R X := existT _ s g.
 
 Definition RetF {E R} (x : R) : itree' E R :=
@@ -66,6 +67,12 @@ Definition TauF {E R} (t : itree E R) : itree' E R :=
 
 Definition VisF {E R X} (e : E X) (k : X -> itree E R) : itree' E R :=
   itreeExt (VisShape e) k.
+*)
+
+Definition itreeExt {E R X} (s : itree_Shape E R) (g : itree_Position s -> X) : itreeF E R X := @Ext (itree_container E R) X s g.
+Definition RetF {E R} (x : R) : itree' E R := itreeExt (RetShape x) (Empty_set_rect _).
+Definition TauF {E R} (t : itree E R) : itree' E R := itreeExt TauShape (fun _ => t).
+Definition VisF {E R X} (e : E X) (k : X -> itree E R) : itree' E R := @Ext (itree_container E R) _ (VisShape e) k.
 
 Notation Ret x := (go (RetF x)).
 Notation Tau t := (go (TauF t)).
@@ -211,17 +218,16 @@ Section bind.
    *)
   Variable k : T -> itree E U.
 
-
   Definition _bind
              (bind : itree E T -> itree E U)
              (oc : itreeF E T (itree E T)) : itree E U :=
     match oc with
-    | existT _ s p =>
+    | Ext s g =>
       match s as s0 return (Position (itree_container E T) s0 -> itree E T) -> itree E U with
-      | RetShape r => fun p => k r
-      | TauShape => fun p => Tau (bind (p tt))
-      | VisShape e => fun p => Vis e (fun x => bind (p x))
-      end p
+      | RetShape r => fun g => k r
+      | TauShape => fun g => Tau (bind (g tt))
+      | VisShape e => fun g => Vis e (fun x => bind (g x))
+      end g
     end.
 
   CoFixpoint bind' (t : itree E T) : itree E U :=
@@ -369,11 +375,11 @@ Fixpoint burn (n : nat) {E R} (t : itree E R) :=
   | O => t
   | S n =>
     match observe t with
-    | existT _ s p =>
+    | Ext s g =>
       match s as s0 return (Position (itree_container E R) s0 -> itree E R) -> itree E R with
-      | RetShape r => fun p => Ret r
-      | TauShape => fun p => burn n (p tt)
-      | VisShape e => fun p => Vis e p
-      end p
+      | RetShape r => fun g => Ret r
+      | TauShape => fun g => burn n (g tt)
+      | VisShape e => fun g => Vis e g
+      end g
     end
   end.

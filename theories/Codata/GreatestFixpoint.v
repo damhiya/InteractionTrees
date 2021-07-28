@@ -27,14 +27,14 @@ Variant bisimF_ (C : Container) (X : Type) (R : X -> X -> Type) : [ C ] X -> [ C
 | BisimStep (shape : Shape C)
             (extension_l extension_r : Position C shape -> X)
             (REL : forall p, R (extension_l p) (extension_r p))
-  : bisimF_ C X R (existT _ shape extension_l) (existT _ shape extension_r)
+  : bisimF_ C X R (Ext shape extension_l) (Ext shape extension_r)
 .
 
 Lemma bisimF_intro {C : Container} {X : Type} {R : X -> X -> Type} :
   forall shape : Shape C,
   forall extension_l extension_r : Position C shape -> X,
   (forall p, R (extension_l p) (extension_r p)) ->
-  bisimF_ C X R (existT _ shape extension_l) (existT _ shape extension_r).
+  bisimF_ C X R (Ext shape extension_l) (Ext shape extension_r).
 Proof.
   exact (BisimStep C X R).
 Qed.
@@ -44,7 +44,7 @@ Lemma bisimF_elim {C : Container} {X : Type} {R : X -> X -> Type} {lhs rhs} :
   exists (shape : Shape C)
          (extension_l extension_r : Position C shape -> X)
          (REL : forall p, R (extension_l p) (extension_r p)),
-         lhs = existT _ shape extension_l /\ rhs = existT _ shape extension_r.
+         lhs = Ext shape extension_l /\ rhs = Ext shape extension_r.
 Proof.
   intros [shape extension_l extension_r REL].
   exists shape, extension_l, extension_r, REL.
