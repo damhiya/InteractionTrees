@@ -108,3 +108,26 @@ Proof.
   econstructor; [eapply SYM_R; eapply REL|].
   intros. right. eapply CIH. eapply RELS.
 Qed.
+
+Lemma Transitive_simulation {X} (R : ObRel X X)
+      (DES : forall sim x y z,
+          simulationF R id sim x y ->
+          simulationF R id sim y z ->
+          exists P x' y' z',
+            R x y P x' y' /\
+            R y z P y' z' /\
+            (forall p, sim (x' p) (y' p)) /\
+            (forall p, sim (y' p) (z' p)))
+      (TRANS : forall x y z P x' y' z',
+          R x y P x' y' ->
+          R y z P y' z' ->
+          R x z P x' z') :
+  Transitive (simulation R id).
+Proof.
+  pcofix CIH; pstep.
+  intros x y z H1 H2; punfold H1; punfold H2.
+  destruct (DES _ _ _ _ H1 H2) as [P [x' [y' [z' [REL1 [REL2 [RELS1 RELS2]]]]]]].
+  econstructor; [eapply TRANS; eauto|].
+  intros p; specialize (RELS1 p); specialize (RELS2 p); pclearbot.
+  right; eapply CIH; eauto.
+Qed.
