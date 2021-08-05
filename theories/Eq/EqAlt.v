@@ -107,16 +107,9 @@ Section Homogeneous.
     destruct REL1;
     destruct H2 as [y z P2 ky2 kz REL2 RELS2];
     remember (observe y);
-    destruct REL2;
-    try congruence.
-    - repeat esplit; eauto.
-      rewrite Heqi; eauto.
-    - repeat esplit; eauto.
-      assert (t2 = t0) by congruence; rewrite H; eauto.
-    - inversion Heqi.
-      destruct H0.
-      assert (H : k2 = k0) by eapply (inj_pair2 _ _ _ _ _ H2).
-      repeat esplit; eauto; try rewrite Heqi; rewrite H; eauto.
+    destruct REL2.
+    all: try congruence; inversion Heqi; subst; repeat esplit; eauto.
+    all: destruct (inj_pair2 _ _ _ _ _ H2); try rewrite Heqi; eauto.
   Qed.
 
   Lemma eqitR_trans (TRANS : Transitive RR) :
@@ -129,16 +122,11 @@ Section Homogeneous.
     intros x y z P kx ky kz H1 H2.
     remember (observe y) in H1.
     remember (observe y) in H2.
-    destruct H1; destruct H2; try congruence.
-    - econstructor.
-      eapply TRANS; eauto.
-      assert (H : r2 = r0) by congruence; rewrite H.
-      eauto.
+    destruct H1; destruct H2.
+    all: try congruence; destruct Heqi; inversion Heqi0; subst.
+    - econstructor; eapply TRANS; eauto.
     - eauto.
-    - symmetry in Heqi0.
-      set (H := eq_trans Heqi Heqi0); inversion H.
-      assert (e = e0) by eapply inj_pair2, H1.
-      rewrite H0; eauto.
+    - destruct (inj_pair2 _ _ _ _ _ H0); eauto.
   Qed.
 
   Lemma Transitive_simulation (TRANS : Transitive RR) :
@@ -165,22 +153,26 @@ Section Homogeneous.
     unfold eqitR. intros sim x y z H1 H2.
     destruct H1 as [x y P1 kx ky1 REL1 RELS1];
     remember (observe y) as oy1;
-    destruct REL1;
+    destruct (REL1);
     destruct H2 as [y z P2 ky2 kz REL2 RELS2];
     remember (observe y) as oy2;
-    destruct REL2; try congruence.
+    destruct (REL2);
+    try congruence.
     - repeat esplit; eauto.
-      econstructor.
       assert (H : r2 = r0) by congruence; rewrite H.
       eauto.
     - repeat esplit; eauto.
       econstructor; eauto.
-      rewrite <- Heqoy1 in REL2.
-      eapply eqitR_inv_RetF.
-      eapply REL2.
+      rewrite <- Heqoy1 in e.
+      eapply eqitR_inv_RetF, e.
     - repeat esplit; eauto.
       assert (H : t2 = t0) by congruence; rewrite H.
       eauto.
+    - repeat esplit; eauto.
+      + econstructor; eauto.
+        assert (H : t2 = t0) by congruence; rewrite H.
+        
+      
   Admitted.
   
  End Homogeneous.
