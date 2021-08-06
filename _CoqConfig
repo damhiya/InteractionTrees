@@ -22,6 +22,7 @@ theories/Basics/FunctionFacts.v
 theories/Codata/Simulation.v
 theories/Codata/ContainerSimulation.v
 theories/Eq/EqAlt.v
+theories/Eq/EqContainer.v
 
 theories/Core/ITreeDefinition.v
 theories/Core/KTree.v
